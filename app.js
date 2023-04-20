@@ -7,8 +7,8 @@ import colors from './utils/colors.js';
 import express from 'express';
 const app = express();
 
-import connectPostgreSQL from './sequelize/models/index.js';
 import connectMongoDB from './mongo/models/index.js';
+import connectPostgreSQL from './sequelize/models/index.js';
 
 const connectDatabases = async () => {
     try {
