@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoRouter from './mongo/routes/mongodb.routes.js';
 import morgan from 'morgan';
 
 import colors from './utils/colors.js';
@@ -10,6 +11,8 @@ const app = express();
 
 app.use(express.json());
 app.use(morgan('dev'));
+
+app.use('/mongo', mongoRouter);
 
 const connectDatabases = async () => {
     try {
@@ -27,5 +30,5 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, async () => {
     await connectDatabases();
-    console.log(`${colors.white}Example app listening at port ${PORT}`);
+    console.log(`${colors.white}Example app listening on port ${PORT}`);
 });
