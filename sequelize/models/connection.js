@@ -10,7 +10,7 @@ const sequelize = new Sequelize(POSTGRESQL_URI, {
 
 const createTables = async () => {
   try {
-    await sequelize.sync({ force: false }); // Cambia a `true` para recrear las tablas si ya existen
+    await sequelize.sync({ force: false }); // Cambia a `true` para recrear las tablas si ya existen, o aplicar cambios en las tablas existentes. Esto podría ser una "migración exprés"?
     console.log(`${colors.blue}Tables successfully created or updated`);
   } catch (error) {
     console.error('Error al crear o actualizar las tablas:', error);
@@ -30,4 +30,4 @@ const connectPostgreSQL = async () => {
   }
 };
 
-export { sequelize, connectPostgreSQL };
+export default { sequelize, connectPostgreSQL };

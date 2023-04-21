@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
-import { sequelize } from './connection.js';
+import instance from './connection.js';
 
-const Address = sequelize.define('Address', {
+const Address = instance.sequelize.define('Address', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -12,6 +12,14 @@ const Address = sequelize.define('Address', {
     state: DataTypes.STRING,
     zipCode: DataTypes.STRING,
     country: DataTypes.STRING,
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'Users',
+            key: 'id',
+        },
+    },
 }, {
     timestamps: true,
 });

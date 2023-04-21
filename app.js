@@ -4,7 +4,8 @@ import morgan from 'morgan';
 
 import colors from './utils/colors.js';
 import connectToMongoDB from './mongo/models/connection.js';
-import { connectPostgreSQL } from './sequelize/models/connection.js';
+import sequelizeRouter from './sequelize/routes/sequelize.routes.js';
+import sequelize from './sequelize/models/connection.js';
 import { PORT } from './dotenv.config.js';
 
 const app = express();
@@ -12,12 +13,13 @@ const app = express();
 app.use(express.json());
 app.use(morgan('dev'));
 
-app.use('/mongo', mongoRouter);
+app.use('/mongo', mongoRouter)
+app.use('/sequelize', sequelizeRouter);
 
 const connectDatabases = async () => {
     try {
         await connectToMongoDB();
-        await connectPostgreSQL();
+        await sequelize.connectPostgreSQL();
     } catch (error) {
         console.error('Error connecting to database:', error);
         process.exit(1);
