@@ -28,6 +28,7 @@ mongoRouter.get('/users/:email', async (req, res) => {
             .findOne({ email: req.params.email })
             .select({ password: 0 })
             .lean();
+        if (!user) { res.status(404).send('User not found') };
         res.status(200).send(user);
     } catch (error) {
         console.log(error);
@@ -97,7 +98,7 @@ mongoRouter.get('/users/:email/address', async (req, res) => {
         const user = await User
             .findOne({ email })
             .select({ email: 1, address: 1 })
-        
+
         if (!user) { res.status(404).send('User not found') };
         res.status(200).send({
             message: `User's full address is ${user.fullAddress}`, // Propiedad virtual del modelo User
@@ -112,7 +113,10 @@ mongoRouter.post('/users', async (req, res) => {
     try {
         const user = new User(req.body);
         await user.save();
-        res.status(201).send(user);
+        res.status(201).send({
+            message: "User created successfully!",
+            user
+        });
     } catch (error) {
         console.log(error);
         res.status(500).send({
@@ -121,5 +125,43 @@ mongoRouter.post('/users', async (req, res) => {
         });
     }
 });
+
+mongoRouter.put('/users/:email', async (req, res) => {
+    try {
+        const { email } = req.params;
+        const updatedUser = await User.findOneAndUpdate({ email }, req.body, { new: true });
+        if (!updatedUser) {
+            res.status(404).send({ message: 'User not found' });
+        } else {
+            res.status(200).send(updatedUser);
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            code: 500,
+            message: error.message
+        });
+    }
+});
+
+mongoRouter.delete('/users/:email', async (req, res) => {
+    try {
+        const { email } = req.params;
+        const deletedUser = await User.findOneAndDelete({ email });
+        if (!deletedUser) {
+            res.status(404).send({ message: 'User not found' });
+        } else {
+            res.status(200).send(deletedUser);
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            code: 500,
+            message: error.message
+        });
+    }
+});
+
+
 
 export default mongoRouter;

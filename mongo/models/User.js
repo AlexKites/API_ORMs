@@ -1,4 +1,3 @@
-// userModel.js
 import mongoose from 'mongoose';
 
 // Para crear un campo en el documento que autoincremente en 1 cada vez que se guarde un nuevo documento, se puede usar el plugin mongoose-sequence, ya que los ID's que proporciona MongoDB NO es númerico y secuencial.
