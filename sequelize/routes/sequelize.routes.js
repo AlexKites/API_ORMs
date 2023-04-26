@@ -129,25 +129,97 @@ sequelizeRouter.post('/user', async (req, res) => {
 });
 
 sequelizeRouter.put('/user/:id', async (req, res) => {
+    const t = await instance.sequelize.transaction();
     try {
-        const user = await User.update(req.body, {
-            where: { id: req.params.id },
+        const userId = req.params.id;
+        const { name, email, password, theme, notifications_email, notifications_sms, notifications_push, street, city, state, zipCode, country, socialMedia } = req.body;
+
+        const user = await User.update({
+            name,
+            email,
+            password,
+            theme,
+            notifications_email,
+            notifications_sms,
+            notifications_push
+        }, {
+            where: { id: userId },
+            transaction: t
         });
-        res.json(user);
+
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+        }
+
+        const addressData = await Address.update({
+            street,
+            city,
+            state,
+            zipCode,
+            country
+        }, {
+            where: { userId },
+            transaction: t
+        });
+
+        if (!addressData) {
+            res.status(404).json({ message: 'Address not found' });
+        }
+
+        const updatedSocialMedia = [];
+        for (const social of socialMedia) {
+            const updatedSocial = await SocialMedia.update({
+                platform: social.platform,
+                username: social.username,
+                url: social.url
+            }, {
+                where: { id: social.id, userId },
+                transaction: t
+            });
+            updatedSocialMedia.push(updatedSocial);
+        }
+
+        await t.commit();
+        res.send({ user, addressData, updatedSocialMedia });
     } catch (error) {
-        console.error(`${colors.red}Error updating user:`, error);
+        await t.rollback();
+        console.error(`Error updating user:`, error);
         res.status(500).json({ message: 'Error updating user' });
     }
 });
 
 sequelizeRouter.delete('/user/:id', async (req, res) => {
+    const t = await instance.sequelize.transaction();
     try {
-        const user = await User.destroy({
-            where: { id: req.params.id },
+        const userId = req.params.id;
+
+        // Primero, elimina los perfiles de redes sociales asociados al usuario
+        await SocialMedia.destroy({
+            where: { userId },
+            transaction: t
         });
-        res.json(user);
+
+        // Luego, elimina la dirección asociada al usuario
+        await Address.destroy({
+            where: { userId },
+            transaction: t
+        });
+
+        // Finalmente, elimina el usuario
+        const result = await User.destroy({
+            where: { id: userId },
+            transaction: t
+        });
+
+        if (!result) {
+            res.status(404).json({ message: 'User not found' });
+        }
+
+        await t.commit();
+        res.json({ message: 'User, address, and social media profiles deleted successfully' });
     } catch (error) {
-        console.error(`${colors.red}Error deleting user:`, error);
+        await t.rollback();
+        console.error(`Error deleting user:`, error);
         res.status(500).json({ message: 'Error deleting user' });
     }
 });
